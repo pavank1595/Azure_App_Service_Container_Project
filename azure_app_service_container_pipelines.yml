@@ -1,5 +1,10 @@
 trigger: none
 
+pool:
+  name: "linuxpool"
+  demands:
+    - Agent.Name -equals linuxagent
+
 stages:
 - stage: Build
   displayName: "Build and push docker images"
