@@ -16,10 +16,11 @@ stages:
       inputs:
         SourceFolder: '/home/devopsdockeruser/_work/1/s/'
         Contents: '**'
-        TargetFolder: '/home/devopsdockeruser/dotnet_code/'
+        TargetFolder: '/home/devopsdockeruser/dotnet_code'
         CleanTargetFolder: true
 
   - job: BuildAndPush
+    dependsOn: CopyFiles
     steps:
     - task: DockerCompose@1
       displayName: "Run docker build command"
