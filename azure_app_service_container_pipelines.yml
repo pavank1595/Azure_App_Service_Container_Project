@@ -64,6 +64,6 @@ stages:
         azureSubscription: 'devops-azure-connection'
         appName: 'prkapptest'
         deployToSlotOrASE: true
-        resourceGroupName: 'rg-app-dev'
+        resourceGroupName: 'rg-app-test'
         slotName: 'production'
         containers: 'prkappreg.azurecr.io/prkapp/sampleapp:v2.0'
