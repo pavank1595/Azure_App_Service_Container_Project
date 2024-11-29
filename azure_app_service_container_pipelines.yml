@@ -1,0 +1,64 @@
+trigger: none
+
+stages:
+- stage: Build
+  displayName: "Build and push docker images"
+  jobs:
+  - job: CopyFiles
+    displayName: "Copy files from default location"
+    steps:
+    - task: CopyFiles@2
+      inputs:
+        SourceFolder: '/home/devopsdockeruser/_work/1/s/'
+        Contents: '**'
+        TargetFolder: '/home/devopsdockeruser/dotnet_code'
+        CleanTargetFolder: true
+
+  - job: BuildAndPush
+    steps:
+    - task: DockerCompose@1
+      displayName: "Run docker build command"
+      inputs:
+        containerregistrytype: 'Azure Container Registry'
+        azureSubscription: 'devops-azure-connection'
+        azureContainerRegistry: '{"loginServer":"prkappreg.azurecr.io", "id" : "/subscriptions/315346d8-947a-4fa6-85ba-e2a58ea2f051/resourceGroups/rg-acr/providers/Microsoft.ContainerRegistry/registries/prkapp"}'
+        dockerComposeFile: '/home/devopsdockeruser/dotnet_code/docker-compose.yml'
+        projectName: "prkapp"
+        action: 'Run a Docker Compose command'
+        dockerComposeCommand: 'build'
+
+
+    - task: DockerCompose@1
+      displayName: "Run docker push command"
+      inputs:
+        containerregistrytype: 'Azure Container Registry'
+        azureSubscription: 'devops-azure-connection'
+        azureContainerRegistry: '{"loginServer":"prkappreg.azurecr.io", "id" : "/subscriptions/315346d8-947a-4fa6-85ba-e2a58ea2f051/resourceGroups/rg-acr/providers/Microsoft.ContainerRegistry/registries/prkapp"}'
+        dockerComposeFile: '/home/devopsdockeruser/dotnet_code/docker-compose.yml'
+        projectName: 'prkapp'
+        action: 'Run a Docker Compose command'
+        dockerComposeCommand: 'push'
+
+- stage: Deploy
+  displayName: "Deploy container to Azure App Service"
+  jobs:
+  - job: DeployToDev
+    displayName: "Deploy container to Dev App Service"
+    steps:
+    - task: AzureWebAppContainer@1
+      inputs:
+        azureSubscription: 'devops-azure-connection'
+        appName: 'prkappdev'
+        deployToSlotOrASE: true
+        resourceGroupName: 'rg-app-dev'
+        slotName: 'production'
+        containers: 'prkappreg.azurecr.io/prkapp/sampleapp:v2.0'
+
+    - task: AzureWebAppContainer@1
+      inputs:
+        azureSubscription: 'devops-azure-connection'
+        appName: 'prkapptest'
+        deployToSlotOrASE: true
+        resourceGroupName: 'rg-app-dev'
+        slotName: 'production'
+        containers: 'prkappreg.azurecr.io/prkapp/sampleapp:v2.0'
